@@ -1,0 +1,16 @@
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/edit_cache.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/rebuild_cache.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/list_install_components.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/install.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/install/local.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/CMakeFiles/install/strip.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/ICES__home_sequer_robocomp_components_Robotica_chocachoca_generated.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/chocachoca.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/edit_cache.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/rebuild_cache.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/list_install_components.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/install.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/install/local.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/install/strip.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/chocachoca_autogen_timestamp_deps.dir
+/home/sequer/robocomp/components/Robotica/chocachoca/generated/CMakeFiles/chocachoca_autogen.dir

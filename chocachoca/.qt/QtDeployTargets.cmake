@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_chocachoca_FILE /home/sequer/robocomp/components/Robotica/chocachoca/bin/chocachoca)
+set(__QT_DEPLOY_TARGET_chocachoca_TYPE EXECUTABLE)

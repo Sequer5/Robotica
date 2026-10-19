@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/sequer/robocomp/components/Robotica/chocachoca/cmake_install.cmake",
+		"/home/sequer/robocomp/components/Robotica/chocachoca/generated/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
