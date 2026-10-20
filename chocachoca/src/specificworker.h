@@ -96,7 +96,7 @@ private:
 		SPIRAL
 	};
 
-	State state = State::FORWARD;
+	State state = State::SPIRAL;
 	int wall_side = 1;
 	int turn_index = 0;
 	int follow_phase = 0;
@@ -108,8 +108,7 @@ private:
 	auto cono(const RoboCompLidar3D::TPoints &points, float minAngle, float maxAngle, float distance);
 	void move_robot(float adv,float rot);
 	float rot;
-	//State machine
-	//auto [state, adv, rot] chocachoca(&data.points); 
+
 	std::tuple<State, float, float> chocachoca(const RoboCompLidar3D::TPoints &points);
 
 	/**

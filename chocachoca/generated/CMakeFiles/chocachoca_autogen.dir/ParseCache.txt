@@ -2490,6 +2490,7 @@
  uic:ui_mainUI.h
 /home/sequer/robocomp/classes/abstract_graphic_viewer/abstract_graphic_viewer.cpp
 /home/sequer/robocomp/classes/rapplication/rapplication.cpp
+/home/sequer/robocomp/classes/grafcetStep/GRAFCETStep.cpp
 /home/sequer/robocomp/components/Robotica/chocachoca/src/specificworker.h
  mmc:Q_OBJECT
  mdp:/home/sequer/robocomp/components/Robotica/chocachoca/generated/Camera360RGB.h
@@ -3575,4 +3576,3 @@
  mdp:/usr/local/include/toml++/impl/yaml_formatter.inl
  mdp:/usr/local/include/toml++/toml.h
  mdp:/usr/local/include/toml++/toml.hpp
-/home/sequer/robocomp/classes/grafcetStep/GRAFCETStep.cpp

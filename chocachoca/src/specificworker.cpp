@@ -80,7 +80,7 @@ void SpecificWorker::initialize()
 
 	connect(viewer, &AbstractGraphicViewer::new_mouse_coordinates, this, &SpecificWorker::new_target_slot);
     rot=0.8f;
-
+    spiral_timer.start();
     //initializeCODE
     /////////GET PARAMS, OPEND DEVICES....////////
     //int period = configLoader.get<int>("Period.Compute") //NOTE: If you want get period of compute use getPeriod("compute")
@@ -97,7 +97,7 @@ auto SpecificWorker::cono(const RoboCompLidar3D::TPoints &points, float minAngle
             : angle > minAngle or angle < maxAngle;
         if (not inAngle) return false;
 
-        if (point.distance2d < this->ROBOT_LENGTH / 2.1) 
+        if (point.distance2d < 300.f) 
             return false;
 
         if (distance > 0)
@@ -159,120 +159,85 @@ std::tuple<SpecificWorker::State, float, float> SpecificWorker::chocachoca(const
 
         switch(state)
         {
-            case State::FORWARD:
-            {
-                if (front_distance < 750.f)
-                {
-                    wall_side = 1;
-                    ++turn_index;
-                    turn_timer.restart();
-                    state = State::TURN;
-                    const auto turn_speed = 0.8f;
-                    return {state, 0.f, static_cast<float>(wall_side) * turn_speed};
-                }
-                return {state, 900.f, 0.f};
-            }   
-            case State::TURN:
-            {
-                const auto turn_speed = 0.8f;
-                const auto turn_duration_ms = static_cast<long long>(1000.f * (M_PI / 2.f) / turn_speed);
-                if (turn_timer.elapsed() >= turn_duration_ms and front_distance > 950.f)
-                {
-                    if (turn_index == 2)
-                    {
-                        follow_phase = 1;
-                        segment_timer.restart();
-                        state = State::FOLLOW_WALL;
-                    }
-                    else if (turn_index == 3)
-                    {
-                        follow_phase = 2;
-                        segment_timer.restart();
-                        state = State::FOLLOW_WALL;
-                    }
-                    else
-                    {
-                        state = State::FOLLOW_WALL;
-                    }
-                    return {state, 0.f, 0.f};
-                }
-                return {state, 0.f, static_cast<float>(wall_side) * turn_speed};
-            }
-            case State::FOLLOW_WALL:
-            {
-                if (follow_phase == 1)
-                {
-                    const auto descend_speed = 900.f;
-                    const auto descend_distance = 2500.f;
-                    const auto descend_duration_ms = static_cast<long long>(1000.f * descend_distance / descend_speed);
-                    if (segment_timer.elapsed() >= descend_duration_ms)
-                    {
-                        follow_phase = 0;
-                        ++turn_index;
-                        turn_timer.restart();
-                        state = State::TURN;
-                        return {state, 0.f, static_cast<float>(wall_side) * 0.8f};
-                    }
-                    return {state, descend_speed, 0.f};
-                }
-
-                if (follow_phase == 2)
-                {
-                    const auto shift_speed = 900.f;
-                    const auto shift_distance = 1250.f;
-                    const auto shift_duration_ms = static_cast<long long>(1000.f * shift_distance / shift_speed);
-                    if (segment_timer.elapsed() >= shift_duration_ms or front_distance < 750.f)
-                    {
-                        spiral_rot = 1.6f;
-                        spiral_timer.restart();
-                        state = State::SPIRAL;
-                        return {state, 0.f, 0.f};
-                    }
-                    return {state, shift_speed, 0.f};
-                }
-
-                if (front_distance < 750.f)
-                {
-                    ++turn_index;
-                    turn_timer.restart();
-                    state = State::TURN;
-                    return {state, 0.f, static_cast<float>(wall_side) * 0.8f};
-                }
-                return {state, 900.f, 0.f};
-            }
             case State::SPIRAL:
             {
-                const auto spiral_duration_ms = 16000LL;
-                if (spiral_timer.elapsed() >= spiral_duration_ms)
+                // Si encontramos pared, pasamos a seguir la pared
+                if (front_distance < 650.f)
                 {
-                    follow_phase = 0;
-                    spiral_rot = 1.6f;
                     state = State::FOLLOW_WALL;
                     return {state, 0.f, 0.f};
                 }
 
-                if (front_distance < 750.f)
-                {
-                    follow_phase = 0;
-                    turn_index = 4;
-                    spiral_rot = 0.8f;
-                    turn_timer.restart();
-                    state = State::TURN;
-                    return {state, 0.f, static_cast<float>(wall_side) * 0.8f};
-                }
-
+                // Cálculo progresivo del giro de la espiral
                 const auto elapsed_seconds = static_cast<float>(spiral_timer.elapsed()) / 1000.f;
                 spiral_rot = 1.6f - 0.08f * elapsed_seconds;
-                if (spiral_rot < 0.35f)
-                    spiral_rot = 0.35f;
+                if (spiral_rot < 0.25f) spiral_rot = 0.25f; // Tope de giro
+                
                 return {state, 900.f, spiral_rot};
             }
-        return {state, 0.f, 0.f};
+
+            case State::FOLLOW_WALL:
+            {
+                // Miramos al frente para las esquinas y a todo el lateral derecho para la pared
+                const auto frente = nearest(-0.5f, 0.5f);
+                const auto derecha = nearest(-1.8f, -0.4f);
+
+                // 1. ANTI-CHOQUES (Esquinas): Si hay pared de frente, volantazo izquierdo
+                if (frente < 550.f) 
+                {
+                    return {state, 200.f, 1.2f}; 
+                }
+
+                // 2. SI PIERDE LA PARED: Vuelve a ir recto a buscar otra
+                if (derecha > 1200.f)
+                {
+                    state = State::FORWARD; 
+                    return {state, 0.f, 0.f};
+                }
+
+                // 3. CONTROLADOR
+                // Queremos mantener la pared a exactamente 500 mm.
+                float error = 500.f - derecha; 
+                
+                // Si la pared está a 400mm: 500 - 400 = 100 * 0.004 = 0.4 (Gira a la izq)
+                // Si la pared está a 600mm: 500 - 600 = -100 * 0.004 = -0.4 (Gira a la der)
+                float rotacion = error * 0.004f; 
+
+                // Limitamos el giro para que el robot no haga movimientos bruscos
+                if (rotacion > 0.8f) rotacion = 0.8f;
+                if (rotacion < -0.8f) rotacion = -0.8f;
+
+                // Avanza rápido mientras corrige suavemente el giro
+                return {state, 700.f, rotacion};
+            }
+
+            case State::FORWARD:
+            {
+                // Avanzamos libremente hasta detectar nueva pared
+                if (front_distance < 650.f)
+                {
+                    state = State::FOLLOW_WALL;
+                    return {state, 0.f, 0.f};
+                }
+                return {state, 900.f, 0.f};
+            }
+
+            case State::TURN:
+            {
+                // Modo escape por si se atasca en el seguro de emergencia
+                if (front_distance > 800.f) {
+                    state = State::FORWARD;
+                    return {state, 0.f, 0.f};
+                }
+                return {state, 0.f, 0.8f};
+            }
+        }
     }
-	} catch(const Ice::Exception &e) {
+    catch(const Ice::Exception &e)
+    {
         std::cerr << e.what() << '\n';
-        
     }
+    
     return {state, 0.f, 0.f};
 }
 
